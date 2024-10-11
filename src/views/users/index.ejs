@@ -24,14 +24,12 @@
                 </tr>
             </thead>
 
-
-
             <tbody>
                 <% if (Courses.length > 0) { %>
                     <% Courses.forEach(curso => { %>
                         <tr>
                             <td><%= curso.course_id %></td>
-                            <td><%= curso.name %></td>
+                            <td><a href="/users/course/<%= curso.course_id %>" class="text-decoration-none"><%= curso.name %></a></td>
                             <td><%= curso.description %></td>
                             <td><%= curso.duration %></td>
                             <td><%= curso.price %></td>
@@ -40,21 +38,17 @@
                                     <button type="submit" class="btn btn-primary">Editar</button>
                                 </form>
                             </td>
-
                             <td> 
                                 <form action="/users/delete/<%= curso.course_id %>" method="post">
                                     <button type="submit" class="btn btn-primary">Excluir</button>
                                 </form>
                             </td>
-
-                            
                         </tr>
                     <% }) %>
-
-                <%} else {%>
-                <tr>
-                    <td colspan="4">Nenhum Curso cadastrado</td>
-                </tr>
+                <% } else { %>
+                    <tr>
+                        <td colspan="6">Nenhum Curso cadastrado</td>
+                    </tr>
                 <% } %>
             </tbody>
         </table>

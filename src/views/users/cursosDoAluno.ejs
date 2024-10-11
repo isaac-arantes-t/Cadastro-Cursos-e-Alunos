@@ -15,13 +15,19 @@
         <ul class="list-group">
             <% if (courses.length > 0) { %>
                 <% courses.forEach(course => { %>
-                    <li class="list-group-item"><%= course.name %> - <%= course.duration %> horas</li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><%= course.name %> - <%= course.duration %> horas - ID: <%= course.course_id %></span>
+                        <form action="/enroll/cancel" method="POST" class="d-inline">
+                            <input type="hidden" name="student_id" value="<%= student.student_id %>">
+                            <input type="hidden" name="course_id" value="<%= course.course_id %>">
+                            <button type="submit" class="btn btn-danger btn-sm">Cancelar Inscrição</button>
+                        </form>
+                    </li>
                 <% }) %>
             <% } else { %>
                 <li class="list-group-item">Este aluno não está inscrito em nenhum curso.</li>
             <% } %>
-        </ul>
-        
+        </ul>        
         <a href="/enroll/<%= student.student_id %>" class="btn btn-primary mt-4">Inscrever em um novo curso</a>
     </div>
 

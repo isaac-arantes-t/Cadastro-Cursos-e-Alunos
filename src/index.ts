@@ -106,11 +106,25 @@ app.get('/users/posts', async function (req: Request, res: Response) {
 
 app.post("/users/delete/:course_id", async function (req: Request, res: Response) {
     const id = req.params.course_id;
+
+    // Verificar se há alunos inscritos no curso
+    const [enrollments] = await connection.query<RowDataPacket[]>(
+        "SELECT * FROM Enrollments WHERE course_id = ?",
+        [id]
+    );
+
+    // Se houver inscrições, retornar uma mensagem de alerta
+    if (enrollments.length > 0) {
+        return res.status(400).send("<script>alert('Não é possível excluir o curso. Existem alunos inscritos.'); window.location.href='/users/list';</script>");
+    }
+
+    // Se não houver inscrições, excluir o curso
     const sqlDelete = "DELETE FROM Courses WHERE course_id = ?";
     await connection.query(sqlDelete, [id]);
 
     res.redirect("/users/list");
 });
+
 
 app.post("/users/login", async function (req: Request, res: Response){
     const {email,password} = req.body;
@@ -210,9 +224,9 @@ app.get('/enrollments/:student_id', async function (req: Request, res: Response)
         [student_id]
     );
 
-    // Obter os cursos que o aluno está inscrito
+    // Obter os cursos que o aluno está inscrito, incluindo o ID do curso
     const [courses] = await connection.query<RowDataPacket[]>( 
-        "SELECT C.name, C.duration FROM Courses C " +
+        "SELECT C.course_id, C.name, C.duration FROM Courses C " +
         "JOIN Enrollments E ON C.course_id = E.course_id " +
         "WHERE E.student_id = ?", 
         [student_id]
@@ -226,6 +240,7 @@ app.get('/enrollments/:student_id', async function (req: Request, res: Response)
     // Renderizar a página com os dados do aluno e dos cursos
     return res.render('users/cursosDoAluno', { student: student[0], courses });
 });
+
 
 
 // Página de inscrição de um novo curso para o aluno
@@ -265,6 +280,52 @@ app.post('/enroll/confirm', async function (req: Request, res: Response) {
     }
 });
 
+// Cancelar a inscrição de um aluno em um curso
+app.post("/enroll/cancel", async function (req: Request, res: Response) {
+    const { student_id, course_id } = req.body;
+
+    // Log para verificar se os IDs estão corretos
+    console.log(`Cancelando inscrição do aluno ID: ${student_id} no curso ID: ${course_id}`);
+
+    try {
+        const deleteQuery = "DELETE FROM Enrollments WHERE student_id = ? AND course_id = ?";
+        await connection.query(deleteQuery, [student_id, course_id]);
+
+        // Redireciona para a lista de inscrições do aluno
+        res.redirect(`/enrollments/${student_id}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Erro ao cancelar a inscrição do aluno.");
+    }
+});
+
+
+// Ver detalhes de um Curso
+app.get('/users/course/:course_id', async function (req: Request, res: Response) {
+    const courseId = req.params.course_id;
+
+    // Obter informações do curso
+    const [course] = await connection.query<RowDataPacket[]>( 
+        "SELECT * FROM Courses WHERE course_id = ?", 
+        [courseId]
+    );
+
+    // Obter os alunos inscritos nesse curso
+    const [students] = await connection.query<RowDataPacket[]>( 
+        "SELECT S.student_id, S.name, S.email FROM Students S " +  // Adicione o student_id aqui
+        "JOIN Enrollments E ON S.student_id = E.student_id " +
+        "WHERE E.course_id = ?", 
+        [courseId]
+    );
+
+    // Verificar se o curso foi encontrado
+    if (course.length === 0) {
+        return res.status(404).json({ message: "Curso não encontrado" });
+    }
+
+    // Renderizar a página com os dados do curso e dos alunos
+    return res.render('users/detalhesCurso', { course: course[0], students });
+});
 
 
 
