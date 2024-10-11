@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscrever <%= student.name %> em um novo curso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        
+        <h1>Inscrever <%= student.name %> em um novo curso</h1>
+        <h2>ID do Aluno: <%= student.student_id %></h2>
+
+        <form action="/enroll/confirm" method="POST">
+            <div class="mb-3">
+                <label for="courseSelect" class="form-label">Selecione um curso:</label>
+                <select id="courseSelect" name="course_id" class="form-select">
+                    <% availableCourses.forEach(course => { %>
+                        <option value="<%= course.course_id %>"><%= course.name %> - <%= course.duration %> horas</option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <input type="hidden" name="student_id" value="<%= student.student_id %>">
+            <button type="submit" class="btn btn-primary">Confirmar Inscrição</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

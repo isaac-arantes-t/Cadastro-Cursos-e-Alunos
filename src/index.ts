@@ -1,5 +1,6 @@
 import express, {Request, Response} from "express";
 import mysql from "mysql2/promise";
+import { RowDataPacket } from 'mysql2';
 
 
 const app = express();
@@ -42,7 +43,7 @@ app.get("/users/login", async function(req:Request, res: Response) {
 })
 
 app.get("/users/edit/:course_id", async function (req: Request, res: Response) {
-    const [id] = req.params.course_id;
+    const id = req.params.course_id;
     
         const [check] = await connection.query(
             "SELECT * FROM Courses WHERE course_id = ?",
@@ -80,11 +81,11 @@ app.get("/users/cadastrarAlunos", async function (req: Request, res: Response) {
     return res.render("users/cadastrarAlunos");
 });
 
-app.get("/users/editar/:course_id", async function (req: Request, res: Response) {
-    const [id] = req.params.course_id;
+app.get("/users/editar/:student_id", async function (req: Request, res: Response) {
+    const id = req.params.student_id;
     
         const [check] = await connection.query(
-            "SELECT * FROM Courses WHERE course_id = ?",
+            "SELECT * FROM Students WHERE student_id = ?",
             [id]
         );
 
@@ -92,7 +93,7 @@ app.get("/users/editar/:course_id", async function (req: Request, res: Response)
             return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
-        res.render("users/formEdit", { user: check[0]});
+        res.render("users/editarAluno", { user: check[0]});
     
 });
 
@@ -136,7 +137,7 @@ app.post("/users/login", async function (req: Request, res: Response){
 });
 
 app.post("/users/edit/:course_id", async function (req: Request, res: Response) {
-    const [id] = req.params.student_id;  
+    const id = req.params.course_id;  
     const body = req.body; 
 
     console.log(`ID do curso: ${id}`);
@@ -165,7 +166,7 @@ app.post("/users/savelogin", async function (req: Request, res: Response) {
 //POST DE alunos
 
 app.post("/users/deletar/:student_id", async function (req: Request, res: Response) {
-    const id = req.params.course_id;
+    const id = req.params.student_id;
     const sqlDelete = "DELETE FROM Students WHERE student_id = ?";
     await connection.query(sqlDelete, [id]);
 
@@ -173,13 +174,13 @@ app.post("/users/deletar/:student_id", async function (req: Request, res: Respon
 });
 
 app.post("/users/editar/:student_id", async function (req: Request, res: Response) {
-    const [id] = req.params.student_id;  
+    const id = req.params.student_id; 
     const body = req.body; 
 
     console.log(`ID do aluno: ${id}`);
     console.log(`Dados recebidos:`, body);
 
-        const sqlUpdate = "UPDATE Courses SET name = ?, age = ?, email = ? WHERE student_id = ?";
+        const sqlUpdate = "UPDATE Students SET name = ?, age = ?, email = ? WHERE student_id = ?";
         await connection.query(sqlUpdate, [body.name, body.age, body.email, id]);
 
         res.redirect("/users/listAlunos");
@@ -198,5 +199,73 @@ app.post("/users/savealuno", async function (req: Request, res: Response) {
         res.status(500).send("Erro ao salvar o usuário.");
     }
 });
+
+// Listar os cursos de um aluno
+app.get('/enrollments/:student_id', async function (req: Request, res: Response) {
+    const student_id = req.params.student_id;
+
+    // Obter informações do aluno
+    const [student] = await connection.query<RowDataPacket[]>( 
+        "SELECT * FROM Students WHERE student_id = ?", 
+        [student_id]
+    );
+
+    // Obter os cursos que o aluno está inscrito
+    const [courses] = await connection.query<RowDataPacket[]>( 
+        "SELECT C.name, C.duration FROM Courses C " +
+        "JOIN Enrollments E ON C.course_id = E.course_id " +
+        "WHERE E.student_id = ?", 
+        [student_id]
+    );
+
+    // Verificar se o aluno foi encontrado
+    if (student.length === 0) {
+        return res.status(404).json({ message: "Aluno não encontrado" });
+    }
+
+    // Renderizar a página com os dados do aluno e dos cursos
+    return res.render('users/cursosDoAluno', { student: student[0], courses });
+});
+
+
+// Página de inscrição de um novo curso para o aluno
+app.get('/enroll/:student_id', async function (req: Request, res: Response) {
+    const student_id = req.params.student_id;
+
+    const [student] = await connection.query<RowDataPacket[]>(
+        "SELECT * FROM Students WHERE student_id = ?", 
+        [student_id]
+    );
+    const [availableCourses] = await connection.query<RowDataPacket[]>( 
+        "SELECT * FROM Courses WHERE course_id NOT IN " + 
+        "(SELECT course_id FROM Enrollments WHERE student_id = ?)", 
+        [student_id]
+    );
+
+    if (student.length === 0) {
+        return res.status(404).json({ message: "Aluno não encontrado" });
+    }
+
+    return res.render('users/inscreverEmCurso', { student: student[0], availableCourses });
+});
+
+
+// Confirmar a inscrição do aluno em um curso
+app.post('/enroll/confirm', async function (req: Request, res: Response) {
+    const { student_id, course_id } = req.body;
+
+    try {
+        const insertQuery = "INSERT INTO Enrollments (student_id, course_id) VALUES (?, ?)";
+        await connection.query(insertQuery, [student_id, course_id]);
+
+        res.redirect(`/enrollments/${student_id}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Erro ao inscrever o aluno no curso.");
+    }
+});
+
+
+
 
 app.listen('3000', () => console.log("Server is listening on port 3000"));

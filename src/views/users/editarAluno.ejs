@@ -10,7 +10,7 @@
 
 <body>
     <div class="container mt-5">
-        <h1 class="mb-4">Editar Curso </h1>
+        <h1 class="mb-4">Editar Aluno </h1>
 
         <form action="/users/editar/<%=user.student_id %>" method="POST">
             <div class="mb-3">
@@ -22,7 +22,7 @@
                 <input type="text" id="age" name="age" class="form-control" value="<%=user.age %>" required>
 
                 <label for="email" class="form-label">E-Mail:</label>
-                <input type="text" id="email" name="email" class="form-control" value="<%=user.duration %>" required>
+                <input type="text" id="email" name="email" class="form-control" value="<%=user.email %>" required>
             
             </div>
 

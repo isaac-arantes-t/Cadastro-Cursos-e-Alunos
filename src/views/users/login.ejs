@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Sistema de Cadastro em Cursos</title>
 
     <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="mb-4">Login </h1>
-        
-         <a href="/users/cadastrarAlunos"><button type="submit" class="btn btn-primary w-100">Cadastrar Aluno</button></a>
-         
-         <a href="/users/formLogin"><button type="submit" class="btn btn-primary w-100">Cadastrar Curso</button></a>
+        <h1 class="mb-4 text-center">Sistema de Cadastro em Cursos</h1>
 
+        <div class="d-grid gap-2">
+            <a href="/users/cadastrarAlunos" class="btn btn-primary btn-lg">Cadastrar Aluno</a>
+            <a href="/users/listAlunos" class="btn btn-warning btn-lg">Lista de Alunos</a>
+            <a href="/users/formLogin" class="btn btn-success btn-lg">Cadastrar Curso</a>
+            <a href="/users/list" class="btn btn-info btn-lg">Lista de Cursos</a>
+            
+        </div>
     </div>
 
     <!-- Bootstrap JS CDN -->
