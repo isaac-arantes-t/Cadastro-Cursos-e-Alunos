@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container mt-5">
-        
+        <a href="/users" class="btn btn-primary mt-3">Início</a>
         <h1>Inscrever <%= student.name %> em um novo curso</h1>
         <h2>ID do Aluno: <%= student.student_id %></h2>
 
@@ -24,6 +24,7 @@
 
             <input type="hidden" name="student_id" value="<%= student.student_id %>">
             <button type="submit" class="btn btn-primary">Confirmar Inscrição</button>
+            <br>
         </form>
     </div>
 
