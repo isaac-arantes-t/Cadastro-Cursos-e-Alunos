@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 // get do Curso
 app.get('/users', async function (req: Request, res: Response) {
     const [rows] = await connection.query("SELECT * FROM Courses");
-    return res.render('users/login', {
+    return res.render('users/index', {
         users: rows
     });
 });
@@ -38,8 +38,8 @@ app.get("/users/formlogin", async function (req: Request, res: Response) {
     return res.render("users/formLogin");
 });
 
-app.get("/users/login", async function(req:Request, res: Response) {
-    return res.render("users/index");
+app.get("/users/index", async function(req:Request, res: Response) {
+    return res.render("users/cadastrarCursos");
 })
 
 app.get("/users/edit/:course_id", async function (req: Request, res: Response) {
@@ -60,14 +60,14 @@ app.get("/users/edit/:course_id", async function (req: Request, res: Response) {
 
 app.get('/users/list', async function (req: Request, res: Response) {
     const [rows] = await connection.query("SELECT * FROM Courses");
-    return res.render('users/index', {Courses: rows});
+    return res.render('users/cadastrarCursos', {Courses: rows});
 });
 
 // gets do Aluno
 
 app.get('/users', async function (req: Request, res: Response) {
     const [rows] = await connection.query("SELECT * FROM Students");
-    return res.render('users/login', {
+    return res.render('users/index', {
         users: rows
     });
 });
@@ -126,7 +126,7 @@ app.post("/users/delete/:course_id", async function (req: Request, res: Response
 });
 
 
-app.post("/users/login", async function (req: Request, res: Response){
+app.post("/users/index", async function (req: Request, res: Response){
     const {email,password} = req.body;
 
     try {
