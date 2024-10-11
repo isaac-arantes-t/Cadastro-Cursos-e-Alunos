@@ -34,8 +34,8 @@ app.get('/users', async function (req: Request, res: Response) {
 });
 
 
-app.get("/users/formlogin", async function (req: Request, res: Response) {
-    return res.render("users/formLogin");
+app.get("/users/cadastrarCurso", async function (req: Request, res: Response) {
+    return res.render("users/cadastrarCurso");
 });
 
 app.get("/users/index", async function(req:Request, res: Response) {
