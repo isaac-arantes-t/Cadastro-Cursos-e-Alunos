@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // gets
 
+// get do Curso
 app.get('/users', async function (req: Request, res: Response) {
     const [rows] = await connection.query("SELECT * FROM Courses");
     return res.render('users/login', {
@@ -31,9 +32,6 @@ app.get('/users', async function (req: Request, res: Response) {
     });
 });
 
-app.get("/users/form", async function (req: Request, res: Response) {
-    return res.render("users/form");
-});
 
 app.get("/users/formlogin", async function (req: Request, res: Response) {
     return res.render("users/formLogin");
@@ -64,37 +62,46 @@ app.get('/users/list', async function (req: Request, res: Response) {
     return res.render('users/index', {Courses: rows});
 });
 
+// gets do Aluno
+
+app.get('/users', async function (req: Request, res: Response) {
+    const [rows] = await connection.query("SELECT * FROM Students");
+    return res.render('users/login', {
+        users: rows
+    });
+});
+
+app.get('/users/listAlunos', async function (req: Request, res: Response) {
+    const [rows] = await connection.query("SELECT * FROM Students");
+    return res.render('users/pagAlunos', {Students: rows});
+});
+
+app.get("/users/cadastrarAlunos", async function (req: Request, res: Response) {
+    return res.render("users/cadastrarAlunos");
+});
+
+app.get("/users/editar/:course_id", async function (req: Request, res: Response) {
+    const [id] = req.params.course_id;
+    
+        const [check] = await connection.query(
+            "SELECT * FROM Courses WHERE course_id = ?",
+            [id]
+        );
+
+        if (!check) {
+            return res.status(404).json({ message: "Usuário não encontrado" });
+        }
+
+        res.render("users/formEdit", { user: check[0]});
+    
+});
+
 app.get('/users/posts', async function (req: Request, res: Response) {
     return res.render("users/posts");
 });
 
-
-
-
 //Posts
 
-app.post("/users/save", async function (req: Request, res: Response) {
-    const { name, email, position, password, confirmPassword, isActive } = req.body;
-
-    if (password !== confirmPassword) {
-        return res.status(400).send('Senhas não conferem. Volte e Tente novamente.');
-    }
-
-    let activeStatus = 0;  
-    if (isActive === 'true') {
-        activeStatus = 1;  
-    }
-
-    const insertQuery = "INSERT INTO users (name, email, position, password, active) VALUES (?, ?, ?, ?, ?)";
-    try {
-        await connection.query(insertQuery, [name, email, position, password, activeStatus]);
-
-        res.redirect("/users/list");
-
-    } catch (err) {
-        res.status(500).send("Erro ao salvar o usuário.");
-    }
-});
 
 app.post("/users/delete/:course_id", async function (req: Request, res: Response) {
     const id = req.params.course_id;
@@ -129,7 +136,7 @@ app.post("/users/login", async function (req: Request, res: Response){
 });
 
 app.post("/users/edit/:course_id", async function (req: Request, res: Response) {
-    const [id] = req.params.course_id;  
+    const [id] = req.params.student_id;  
     const body = req.body; 
 
     console.log(`ID do curso: ${id}`);
@@ -149,6 +156,43 @@ app.post("/users/savelogin", async function (req: Request, res: Response) {
         await connection.query(insertQuery, [name, description, duration, price]);
 
         res.redirect("/users/list");
+
+    } catch (err) {
+        res.status(500).send("Erro ao salvar o usuário.");
+    }
+});
+
+//POST DE alunos
+
+app.post("/users/deletar/:student_id", async function (req: Request, res: Response) {
+    const id = req.params.course_id;
+    const sqlDelete = "DELETE FROM Students WHERE student_id = ?";
+    await connection.query(sqlDelete, [id]);
+
+    res.redirect("/users/listAlunos");
+});
+
+app.post("/users/editar/:student_id", async function (req: Request, res: Response) {
+    const [id] = req.params.student_id;  
+    const body = req.body; 
+
+    console.log(`ID do aluno: ${id}`);
+    console.log(`Dados recebidos:`, body);
+
+        const sqlUpdate = "UPDATE Courses SET name = ?, age = ?, email = ? WHERE student_id = ?";
+        await connection.query(sqlUpdate, [body.name, body.age, body.email, id]);
+
+        res.redirect("/users/listAlunos");
+});
+
+app.post("/users/savealuno", async function (req: Request, res: Response) {
+    const { name, age, email} = req.body;
+
+    const insertQuery = "INSERT INTO Students (name, age, email) VALUES (?, ?, ?)";
+    try {
+        await connection.query(insertQuery, [name, age, email]);
+
+        res.redirect("/users/listAlunos");
 
     } catch (err) {
         res.status(500).send("Erro ao salvar o usuário.");
